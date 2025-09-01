@@ -3,7 +3,7 @@ from pymongo import MongoClient
 class dbConnector:
     def __init__(self):
         self.client = MongoClient("mongodb://localhost:27017")
-        self.db = self.client["MyDb"]
+        self.database = self.client["MyDb"]
 
 class dbTable:
     def __init__(self, db, tableName):
@@ -16,7 +16,7 @@ class dbTable:
         self.table.delete_many(filter)
 
     def update(self, filter, newValue):
-        self .table.update_many(filter, newValue)
+        self.table.update_many(filter, newValue)
     
     def select(self, filter):
         return self.table.find_one(filter)
