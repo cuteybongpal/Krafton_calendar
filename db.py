@@ -13,8 +13,11 @@ class dbTable:
         self.table.insert_one(datadict)
 
     def delete(self, filter):
-        self.table.delete_one(filter)
+        self.table.delete_many(filter)
 
-    def update (self, filter, newValue):
-        self .table.updated(filter, newValue)
+    def update(self, filter, newValue):
+        self .table.update_many(filter, newValue)
+    
+    def select(self, filter):
+        return self.table.find_one(filter)
         
