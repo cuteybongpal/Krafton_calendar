@@ -8,7 +8,7 @@ class UserRepository:
         self.table = dbTable(dd, tName)
     
     def getUser(self, userId):
-        return self.table.select({"userId" : userId})
+        return self.table.select_one({"userId" : userId})
     
     def addUser(self, userId, password):
         user = self.getUser(userId)
