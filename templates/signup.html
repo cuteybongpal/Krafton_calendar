@@ -9,9 +9,9 @@
     <div class="modal-content">
       <div class="modal-header"><h5 class="modal-title">회원가입</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
       <div class="modal-body">
-        <form id="signupForm">
-          <input type="email" id="signupEmail" placeholder="이메일" required>
-          <input type="password" id="signupPassword" placeholder="비밀번호" required>
+        <form id="signupForm" action="signup" method="post">
+          <input type="email" id="signupEmail" placeholder="이메일" required name="id">
+          <input type="password" id="signupPassword" placeholder="비밀번호" required name="pw">
           <button type="submit">회원가입</button>
         </form>
       </div>
@@ -21,8 +21,6 @@
 
 <script>
 document.getElementById("signupForm").addEventListener("submit", e=>{
-  e.preventDefault();
-  alert("회원가입 완료! (서버 연동 필요)");
   bootstrap.Modal.getInstance(document.getElementById("signupModal")).hide();
 });
 </script>

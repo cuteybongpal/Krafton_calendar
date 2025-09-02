@@ -1,12 +1,14 @@
-from db import dbTable, dbConnector;
+from db import dbConnector, dbTable;
 import bcrypt
 
 class UserRepository:
     def __init__(self, db:dbConnector):
-        self.table = dbTable(db.db, "Users")
+        dd = db.database
+        tName = "Users"
+        self.table = dbTable(dd, tName)
     
     def getUser(self, userId):
-        return self.table.select({"userId" : userId})
+        return self.table.select_one({"userId" : userId})
     
     def addUser(self, userId, password):
         user = self.getUser(userId)
@@ -16,11 +18,11 @@ class UserRepository:
         return True
 
     def isSuccessLogin(self, userId, password):
-        user = self.getUser(self, userId)
+        user = self.getUser(userId)
         if user == None:
-            return False
+            return { "condition" : False, "errorCode" : "해당 유저가 존재하지 않습니다." }
         
-        if not(bcrypt.checkpw(password, user["password"])):
-            return False
+        if not(bcrypt.checkpw(password.encode('utf-8'), user["password"])):
+            return { "condition" : False, "errorCode" : "비밀번호가 일치하지 않습니다." }
         
-        return True
+        return { "condition" : True }
