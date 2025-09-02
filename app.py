@@ -1,9 +1,12 @@
-from flask import Flask, redirect, request, session, make_response
+from flask import Flask, redirect, request, session, make_response, jsonify
 from db import dbConnector
 from user import UserRepository
 from memos import memoRepository, memo
 import jinjaUtil
 import secrets
+# 커리큘럼 API용 MongoDB 연결(분리 구성)
+from pymongo import MongoClient
+from config import MONGO_URI, DB_NAME, COLL_NAME  # 별도 config.py에 정의해 두세요.
 
 dbconnector = None
 userRepo = None
@@ -98,3 +101,24 @@ if __name__ == '__main__':
     userRepo = UserRepository(dbconnector)
     memoRepo = memoRepository(dbconnector)
     app.run()
+
+# MongoDB(커리큘럼) 연결
+mongo_client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+mongo_db = mongo_client[DB_NAME]
+
+import re
+def weeks_sort_key(w: str) -> int:
+    # "W02~W05" → 2, "W010" → 10
+    m = re.match(r"W0?(\d+)", w or "")
+    return int(m.group(1)) if m else 999
+
+@app.get("/api/curriculum")
+def api_curriculum():
+    try:
+        docs = list(mongo_db[COLL_NAME].find(
+            {}, {"_id": 0, "weeks": 1, "description": 1}
+        ))
+        docs.sort(key=lambda d: weeks_sort_key(d.get("weeks", "")))
+        return jsonify(docs), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
