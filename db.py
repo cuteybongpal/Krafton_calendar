@@ -18,6 +18,9 @@ class dbTable:
     def update(self, filter, newValue):
         self.table.update_many(filter, newValue)
     
-    def select(self, filter):
+    def select_one(self, filter):
         return self.table.find_one(filter)
+    
+    def select_many(self, filter):
+        return self.table.find(filter)
         
