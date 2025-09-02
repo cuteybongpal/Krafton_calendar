@@ -42,6 +42,11 @@ def llllll():
     print(id)
     return "로그인 성공"
 
+@app.route('/logout', methods=['GET'])
+def logout():
+    session.pop('sessionId')
+    session.pop('userId')
+    return redirect('/')
 if __name__ == '__main__':
     dbconnector = dbConnector()
     userRepo = UserRepository(dbconnector)
