@@ -20,9 +20,9 @@ class UserRepository:
     def isSuccessLogin(self, userId, password):
         user = self.getUser(userId)
         if user == None:
-            return False
+            return { "condition" : False, "errorCode" : "해당 유저가 존재하지 않습니다." }
         
         if not(bcrypt.checkpw(password.encode('utf-8'), user["password"])):
-            return False
+            return { "condition" : False, "errorCode" : "비밀번호가 일치하지 않습니다." }
         
-        return True
+        return { "condition" : True }

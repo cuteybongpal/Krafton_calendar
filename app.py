@@ -18,7 +18,10 @@ app.config.update(
 
 @app.route('/')
 def hello_world():
-    return jinjaUtil.render("main", {})
+    datadict =  {
+        "userId" : session.get('userId')
+    }
+    return jinjaUtil.render("main", datadict)
 
 @app.route('/signup', methods=['POST'])
 def signup():
@@ -31,16 +34,16 @@ def signup():
 @app.route('/login', methods=['POST'])
 def llllll():
     id = request.form.get('email')
-    pw =request.form.get('pw')
+    pw = request.form.get('pw')
     isSuccess = userRepo.isSuccessLogin(id, pw)
     print(id)
-    if not isSuccess:
-        return "로그인 실패"
+    if not isSuccess['condition']:
+        return jinjaUtil.render('error', {"errorCode" : isSuccess["errorCode"]});
     sessionId = secrets.token_urlsafe(32)
     session['sessionId'] = sessionId
     session['userId'] = id
     print(id)
-    return "로그인 성공"
+    return redirect('/')
 
 @app.route('/logout', methods=['GET'])
 def logout():
