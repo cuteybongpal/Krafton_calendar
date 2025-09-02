@@ -181,50 +181,87 @@
   </div>
 </div>
 
+<!-- 일정 관리 모달 -->
+<div class="modal fade" id="eventModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">일정 관리</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <h6 id="eventDateLabel"></h6>
+        <ul id="eventList" class="list-group mb-3"></ul>
+
+        <form id="eventForm" class="d-flex flex-column gap-2" action="memo" method="post">
+          <div class="d-flex gap-2">
+            <input type="date" class="form-control" id="startDate" name="startDate" required>
+            <input type="date" class="form-control" id="endDate" name="endDate" required>
+          </div>
+          <div class="d-flex gap-2">
+            <input type="time" class="form-control" id="startTime" name="startTime" required>
+            <input type="time" class="form-control" id="endTime" name="endTime" required>
+          </div>
+          <input type="text" class="form-control" id="eventText" placeholder="일정 내용" name="memo" required>
+          <button type="submit" class="btn btn-primary">추가</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 일정 수정 모달 -->
+<div class="modal fade" id="editEventModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">일정 수정</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editEventForm" class="d-flex flex-column gap-2">
+          <input type="hidden" id="editDateKey">
+          <input type="hidden" id="editIndex">
+
+          <div class="d-flex gap-2">
+            <input type="time" class="form-control" id="editStartTime" required>
+            <input type="time" class="form-control" id="editEndTime" required>
+          </div>
+          <input type="text" class="form-control" id="editText" placeholder="일정 내용" required>
+          <button type="submit" class="btn btn-primary">저장</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  
-  // 오늘 날짜
   document.getElementById("today-date").innerText = new Date().toISOString().split('T')[0];
 
   const MIN_DATE = new Date(2025, 8, 1);
   const MAX_DATE = new Date(2026, 0, 31);
   let current = new Date(2025, 8, 1);
   let selected = null;
-
-  const events = {
-    "2025-09-05": "팀 프로젝트 회의",
-    "2025-09-12": "병원 예약 오후 2시",
-    "2025-10-03": "개천절 휴일",
-    "2025-11-20": "친구 생일 파티",
-    "2026-01-01": "신정 연휴"
-  };
-
+  const events = {};
   const monthLabel = document.getElementById("monthLabel");
   const prevBtn = document.getElementById("prevBtn");
   const nextBtn = document.getElementById("nextBtn");
   const grid = document.getElementById("calendarGrid");
 
-  function formatDateKey(date) {
-    return date.toISOString().split("T")[0];
-  }
+  function formatDateKey(date) { return date.toISOString().split("T")[0]; }
+  let selectedDateKey = null;
 
   function renderCalendar() {
     monthLabel.textContent = `${current.getFullYear()}년 ${current.getMonth()+1}월`;
-
     prevBtn.disabled = new Date(current.getFullYear(), current.getMonth(), 1) <= MIN_DATE;
     nextBtn.disabled = new Date(current.getFullYear(), current.getMonth()+1, 0) >= MAX_DATE;
-
     grid.innerHTML = "";
     const startDay = new Date(current.getFullYear(), current.getMonth(), 1);
     const endDay = new Date(current.getFullYear(), current.getMonth()+1, 0);
-    const startWeekDay = (startDay.getDay() + 6) % 7; // 월요일 시작
+    const startWeekDay = (startDay.getDay() + 6) % 7;
 
     let days = [];
     for (let i=0; i<startWeekDay; i++) days.push(null);
-    for (let d=1; d<=endDay.getDate(); d++) {
-      days.push(new Date(current.getFullYear(), current.getMonth(), d));
-    }
+    for (let d=1; d<=endDay.getDate(); d++) days.push(new Date(current.getFullYear(), current.getMonth(), d));
 
     days.forEach(date => {
       const cell = document.createElement("div");
@@ -232,7 +269,6 @@
 
       if (date) {
         const key = formatDateKey(date);
-
         const dateDiv = document.createElement("div");
         dateDiv.textContent = date.getDate();
         cell.appendChild(dateDiv);
@@ -245,16 +281,20 @@
         } else {
           cell.addEventListener("click", () => {
             selected = date;
+            selectedDateKey = key;
+            renderEventModal(key);
+            new bootstrap.Modal(document.getElementById("eventModal")).show();
             renderCalendar();
           });
         }
 
         if (events[key]) {
+          const firstEvent = events[key][0];
           const eventDiv = document.createElement("div");
           eventDiv.className = "calendar-event";
-          eventDiv.textContent = events[key];
+          eventDiv.textContent = `${firstEvent.start}~${firstEvent.end} ${firstEvent.text}`;
           eventDiv.setAttribute("data-bs-toggle", "tooltip");
-          eventDiv.setAttribute("title", events[key]);
+          eventDiv.setAttribute("title", events[key].map(ev => `${ev.start}~${ev.end} ${ev.text}`).join("\n"));
           cell.appendChild(eventDiv);
         }
       }
@@ -265,22 +305,90 @@
     tooltipTriggerList.map(el => new bootstrap.Tooltip(el));
   }
 
-  prevBtn.addEventListener("click", () => {
-    current.setMonth(current.getMonth() - 1);
-    renderCalendar();
-  });
-  nextBtn.addEventListener("click", () => {
-    current.setMonth(current.getMonth() + 1);
+  function renderEventModal(dateKey) {
+    document.getElementById("eventDateLabel").textContent = dateKey;
+    const list = document.getElementById("eventList");
+    list.innerHTML = "";
+
+    if (events[dateKey]) {
+      events[dateKey].sort((a,b) => a.start.localeCompare(b.start)).forEach((ev, idx) => {
+        const li = document.createElement("li");
+        li.className = "list-group-item d-flex justify-content-between align-items-center";
+        li.innerHTML = `
+          <span>${ev.start}~${ev.end} - ${ev.text}</span>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-warning">수정</button>
+            <button class="btn btn-sm btn-danger">삭제</button>
+          </div>`;
+        li.querySelector(".btn-danger").addEventListener("click", () => {
+          events[dateKey] = events[dateKey].filter(e => e !== ev);
+          if (events[dateKey].length === 0) delete events[dateKey];
+          renderEventModal(dateKey);
+          renderCalendar();
+        });
+        li.querySelector(".btn-warning").addEventListener("click", () => {
+          document.getElementById("editDateKey").value = dateKey;
+          document.getElementById("editIndex").value = idx;
+          document.getElementById("editStartTime").value = ev.start;
+          document.getElementById("editEndTime").value = ev.end;
+          document.getElementById("editText").value = ev.text;
+          new bootstrap.Modal(document.getElementById("editEventModal")).show();
+        });
+        list.appendChild(li);
+      });
+    }
+  }
+
+  document.getElementById("eventForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const startDate = new Date(document.getElementById("startDate").value);
+    const endDate = new Date(document.getElementById("endDate").value);
+    const startTime = document.getElementById("startTime").value;
+    const endTime = document.getElementById("endTime").value;
+    const text = document.getElementById("eventText").value;
+
+    let day = new Date(startDate);
+    while (day <= endDate) {
+      const key = formatDateKey(day);
+      if (!events[key]) events[key] = [];
+      if (startDate.toDateString() === endDate.toDateString()) {
+        events[key].push({ start: startTime, end: endTime, text });
+      } else if (day.toDateString() === startDate.toDateString()) {
+        events[key].push({ start: startTime, end: "23:59", text });
+      } else if (day.toDateString() === endDate.toDateString()) {
+        events[key].push({ start: "00:00", end: endTime, text });
+      } else {
+        events[key].push({ start: "00:00", end: "23:59", text });
+      }
+      day.setDate(day.getDate() + 1);
+    }
+    document.getElementById("eventForm").reset();
+    renderEventModal(selectedDateKey);
     renderCalendar();
   });
 
+  document.getElementById("editEventForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const dateKey = document.getElementById("editDateKey").value;
+    const idx = parseInt(document.getElementById("editIndex").value);
+    const start = document.getElementById("editStartTime").value;
+    const end = document.getElementById("editEndTime").value;
+    const text = document.getElementById("editText").value;
+    if (events[dateKey] && events[dateKey][idx]) {
+      events[dateKey][idx] = { start, end, text };
+    }
+    bootstrap.Modal.getInstance(document.getElementById("editEventModal")).hide();
+    renderEventModal(dateKey);
+    renderCalendar();
+  });
+
+  prevBtn.addEventListener("click", () => { current.setMonth(current.getMonth() - 1); renderCalendar(); });
+  nextBtn.addEventListener("click", () => { current.setMonth(current.getMonth() + 1); renderCalendar(); });
   renderCalendar();
 
-  // 간단한 폼 submit 이벤트 (실제 서버 연동 필요)
   document.getElementById("signupForm").addEventListener("submit", e => {
     bootstrap.Modal.getInstance(document.getElementById("signupModal")).hide();
   });
-
   document.getElementById("loginForm").addEventListener("submit", e => {
     bootstrap.Modal.getInstance(document.getElementById("loginModal")).hide();
   });

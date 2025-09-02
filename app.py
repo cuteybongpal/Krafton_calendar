@@ -21,7 +21,10 @@ def hello_world():
     datadict =  {
         "userId" : session.get('userId')
     }
-    return jinjaUtil.render("main", datadict)
+    if (session.get('userId') == 'admin@admin'):
+        return jinjaUtil.render("admin", datadict)
+    else:
+        return jinjaUtil.render("student", datadict)
 
 @app.route('/signup', methods=['POST'])
 def signup():

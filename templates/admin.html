@@ -74,10 +74,21 @@
         </p>
         <button class="btn btn-sm btn-secondary" id="editMealBtn">편집</button>
       </div>
+      <div class="widget">
+        <h5>
+          Admin님 환영합니다!
+        </h5>
+      </div>
+      {% if userId == None or userId == '' %}
       <div class="widget d-flex flex-column gap-2">
         <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#signupModal">회원가입</button>
         <button class="btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#loginModal">로그인</button>
       </div>
+      {% else %}
+      <div class="widget d-flex flex-column gap-2">
+        <a href="/logout" class="btn btn-danger w-100">로그아웃</a>
+      </div>
+      {% endif %}
     </div>
 
     <!-- 오른쪽 달력 -->
@@ -382,13 +393,9 @@
   renderCalendar();
 
   document.getElementById("signupForm").addEventListener("submit", e => {
-    e.preventDefault();
-    alert("회원가입 완료! (서버 연동 필요)");
     bootstrap.Modal.getInstance(document.getElementById("signupModal")).hide();
   });
   document.getElementById("loginForm").addEventListener("submit", e => {
-    e.preventDefault();
-    alert("로그인 성공! (서버 연동 필요)");
     bootstrap.Modal.getInstance(document.getElementById("loginModal")).hide();
   });
 
