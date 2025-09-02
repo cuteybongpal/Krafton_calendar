@@ -18,7 +18,10 @@ app.config.update(
 
 @app.route('/')
 def hello_world():
-    return jinjaUtil.render("main", {})
+    datadict =  {
+        "userId" : session['userId']
+    }
+    return jinjaUtil.render("main", datadict)
 
 @app.route('/signup', methods=['POST'])
 def signup():

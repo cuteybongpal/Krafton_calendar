@@ -77,10 +77,19 @@
           B : 김치찌개, 비빔밥
         </p>
       </div>
+      <div class="widget">
+        <h5>{{ userId }}님 환영합니다!</h5>
+      </div>
+      {% if userId == None or userId == '' %}
       <div class="widget d-flex flex-column gap-2">
         <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#signupModal">회원가입</button>
         <button class="btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#loginModal">로그인</button>
       </div>
+      {% else %}
+      <div class="widget d-flex flex-column gap-2">
+        <a href="/logout" class="btn btn-danger w-100">로그아웃</a>
+      </div>
+      {% endif %}
     </div>
 
     <!-- 오른쪽 달력 -->
