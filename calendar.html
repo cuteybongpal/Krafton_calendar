@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>달력 + 사이드바 + 로그인/회원가입 + 일정관리</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: #f4f4f4;
+    }
+    .sidebar {
+      background-color: #fff;
+      min-height: 100vh;
+      padding: 20px;
+      box-shadow: 2px 0 6px rgba(0,0,0,0.1);
+    }
+    .widget {
+      background: #f9f9f9;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: .2rem;
+    }
+    .calendar-cell {
+      height: 120px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      border-radius: .5rem;
+      font-size: .75rem;
+      cursor: pointer;
+      padding: 2px;
+      position: relative;
+    }
+    .calendar-cell.disabled { color: #bbb; cursor: not-allowed; }
+    .calendar-cell.today { border: 1px solid #0d6efd; }
+    .calendar-cell.selected { background-color: #0d6efd; color: white; }
+    .calendar-event {
+      font-size: .65rem;
+      color: #0d6efd;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+      width: 100%;
+    }
+    .weekday {
+      font-weight: 600;
+      text-align: center;
+      font-size: .75rem;
+      padding: .1rem 0;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container-fluid">
+  <div class="row">
+    
+    <!-- 왼쪽 사이드바 -->
+    <div class="col-3 sidebar">
+      <div class="widget">
+        <h5>오늘 날짜</h5>
+        <h4 id="today-date"></h4>
+      </div>
+      <div class="widget">
+        <h5>오늘 급식</h5>
+        <p>
+          A : 된장찌개, 야채볶음밥<br>
+          B : 김치찌개, 비빔밥
+        </p>
+      </div>
+      <div class="widget d-flex flex-column gap-2">
+        <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#signupModal">회원가입</button>
+        <button class="btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#loginModal">로그인</button>
+      </div>
+    </div>
+
+    <!-- 오른쪽 달력 -->
+    <div class="col-9 p-4">
+      <div class="card shadow-sm">
+        <div class="card-body">
+
+          <!-- 달력 헤더 -->
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <button class="btn btn-outline-secondary btn-sm" id="prevBtn">&lt;</button>
+            <h5 class="mb-0" id="monthLabel"></h5>
+            <button class="btn btn-outline-secondary btn-sm" id="nextBtn">&gt;</button>
+          </div>
+
+          <!-- 요일 헤더 -->
+          <div class="calendar-grid text-muted mb-1">
+            <div class="weekday">월</div>
+            <div class="weekday">화</div>
+            <div class="weekday">수</div>
+            <div class="weekday">목</div>
+            <div class="weekday">금</div>
+            <div class="weekday text-danger">토</div>
+            <div class="weekday text-danger">일</div>
+          </div>
+
+          <!-- 날짜 그리드 -->
+          <div id="calendarGrid" class="calendar-grid"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 회원가입 모달 -->
+<div class="modal fade" id="signupModal" tabindex="-1" aria-labelledby="signupModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="signupModalLabel">회원가입</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+      </div>
+      <div class="modal-body">
+        <form id="signupForm">
+          <div class="mb-3">
+            <label for="signupEmail" class="form-label">이메일</label>
+            <input type="email" class="form-control" id="signupEmail" required>
+          </div>
+          <div class="mb-3">
+            <label for="signupPassword" class="form-label">비밀번호</label>
+            <input type="password" class="form-control" id="signupPassword" required>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">회원가입</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 로그인 모달 -->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="loginModalLabel">로그인</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+      </div>
+      <div class="modal-body">
+        <form id="loginForm">
+          <div class="mb-3">
+            <label for="loginEmail" class="form-label">이메일</label>
+            <input type="email" class="form-control" id="loginEmail" required>
+          </div>
+          <div class="mb-3">
+            <label for="loginPassword" class="form-label">비밀번호</label>
+            <input type="password" class="form-control" id="loginPassword" required>
+          </div>
+          <button type="submit" class="btn btn-success w-100">로그인</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 일정 관리 모달 -->
+<div class="modal fade" id="eventModal" tabindex="-1" aria-labelledby="eventModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="eventModalLabel">일정 관리</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+      </div>
+      <div class="modal-body">
+        <h6 id="eventDateLabel"></h6>
+        <ul id="eventList" class="list-group mb-3"></ul>
+
+        <form id="eventForm" class="d-flex gap-2">
+          <input type="time" class="form-control" id="eventTime" required>
+          <input type="text" class="form-control" id="eventText" placeholder="일정 내용" required>
+          <button type="submit" class="btn btn-primary">추가</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // 오늘 날짜 표시
+  document.getElementById("today-date").innerText = new Date().toISOString().split('T')[0];
+
+  const MIN_DATE = new Date(2025, 8, 1);
+  const MAX_DATE = new Date(2026, 0, 31);
+  let current = new Date(2025, 8, 1);
+  let selected = null;
+
+  // 일정 저장 구조 (날짜별 -> {시간: 일정})
+  const events = {
+    "2025-09-05": { "10:00": "팀 프로젝트 회의", "14:00": "자료 준비" },
+    "2025-09-12": { "14:00": "병원 예약" },
+    "2025-10-03": { "": "개천절 휴일" },
+    "2025-11-20": { "19:00": "친구 생일 파티" },
+    "2026-01-01": { "": "신정 연휴" }
+  };
+
+  const monthLabel = document.getElementById("monthLabel");
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  const grid = document.getElementById("calendarGrid");
+
+  function formatDateKey(date) {
+    return date.toISOString().split("T")[0];
+  }
+
+  let selectedDateKey = null;
+
+  function renderCalendar() {
+    monthLabel.textContent = `${current.getFullYear()}년 ${current.getMonth()+1}월`;
+
+    prevBtn.disabled = new Date(current.getFullYear(), current.getMonth(), 1) <= MIN_DATE;
+    nextBtn.disabled = new Date(current.getFullYear(), current.getMonth()+1, 0) >= MAX_DATE;
+
+    grid.innerHTML = "";
+    const startDay = new Date(current.getFullYear(), current.getMonth(), 1);
+    const endDay = new Date(current.getFullYear(), current.getMonth()+1, 0);
+    const startWeekDay = (startDay.getDay() + 6) % 7; // 월요일 시작
+
+    let days = [];
+    for (let i=0; i<startWeekDay; i++) days.push(null);
+    for (let d=1; d<=endDay.getDate(); d++) {
+      days.push(new Date(current.getFullYear(), current.getMonth(), d));
+    }
+
+    days.forEach(date => {
+      const cell = document.createElement("div");
+      cell.className = "calendar-cell border";
+
+      if (date) {
+        const key = formatDateKey(date);
+
+        const dateDiv = document.createElement("div");
+        dateDiv.textContent = date.getDate();
+        cell.appendChild(dateDiv);
+
+        const today = new Date();
+        if (date.toDateString() === today.toDateString()) cell.classList.add("today");
+        if (selected && date.toDateString() === selected.toDateString()) cell.classList.add("selected");
+        if (date < MIN_DATE || date > MAX_DATE) {
+          cell.classList.add("disabled");
+        } else {
+          // 날짜 클릭 → 일정 모달 열기
+          cell.addEventListener("click", () => {
+            selected = date;
+            selectedDateKey = key;
+            renderEventModal(key);
+            new bootstrap.Modal(document.getElementById("eventModal")).show();
+            renderCalendar();
+          });
+        }
+
+        if (events[key]) {
+          const eventDiv = document.createElement("div");
+          eventDiv.className = "calendar-event";
+          const firstEvent = Object.values(events[key])[0]; // 첫 일정만 표시
+          eventDiv.textContent = firstEvent;
+          eventDiv.setAttribute("data-bs-toggle", "tooltip");
+          eventDiv.setAttribute("title", Object.entries(events[key]).map(([t,v]) => (t? `${t} - ${v}`: v)).join("\n"));
+          cell.appendChild(eventDiv);
+        }
+      }
+      grid.appendChild(cell);
+    });
+
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(el => new bootstrap.Tooltip(el));
+  }
+
+  // 일정 모달 렌더링
+  function renderEventModal(dateKey) {
+    document.getElementById("eventDateLabel").textContent = dateKey;
+    const list = document.getElementById("eventList");
+    list.innerHTML = "";
+
+    if (events[dateKey]) {
+      Object.entries(events[dateKey])
+        .sort(([t1], [t2]) => t1.localeCompare(t2))
+        .forEach(([time, text]) => {
+          const li = document.createElement("li");
+          li.className = "list-group-item d-flex justify-content-between align-items-center";
+          li.innerHTML = `<span>${time ? time : "종일"} - ${text}</span>
+                          <button class="btn btn-sm btn-danger">삭제</button>`;
+          li.querySelector("button").addEventListener("click", () => {
+            delete events[dateKey][time];
+            if (Object.keys(events[dateKey]).length === 0) delete events[dateKey];
+            renderEventModal(dateKey);
+            renderCalendar();
+          });
+          list.appendChild(li);
+        });
+    }
+  }
+
+  // 일정 추가
+  document.getElementById("eventForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const time = document.getElementById("eventTime").value;
+    const text = document.getElementById("eventText").value;
+
+    if (!events[selectedDateKey]) events[selectedDateKey] = {};
+    events[selectedDateKey][time] = text;
+
+    document.getElementById("eventForm").reset();
+    renderEventModal(selectedDateKey);
+    renderCalendar();
+  });
+
+  prevBtn.addEventListener("click", () => {
+    current.setMonth(current.getMonth() - 1);
+    renderCalendar();
+  });
+  nextBtn.addEventListener("click", () => {
+    current.setMonth(current.getMonth() + 1);
+    renderCalendar();
+  });
+
+  renderCalendar();
+
+  // 회원가입/로그인 폼
+  document.getElementById("signupForm").addEventListener("submit", e => {
+    e.preventDefault();
+    alert("회원가입 완료! (서버 연동 필요)");
+    bootstrap.Modal.getInstance(document.getElementById("signupModal")).hide();
+  });
+
+  document.getElementById("loginForm").addEventListener("submit", e => {
+    e.preventDefault();
+    alert("로그인 성공! (서버 연동 필요)");
+    bootstrap.Modal.getInstance(document.getElementById("loginModal")).hide();
+  });
+</script>
+
+</body>
+</html>
