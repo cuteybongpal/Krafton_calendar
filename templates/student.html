@@ -112,6 +112,8 @@
           <h5>정글 커리큘럼</h5>
             <ul id="dbDataList" class="list-unstyled mb-0 small"></ul>
                 <button class="btn btn-link btn-sm mt-2" id="moreCurriculumBtn">더 보기</button>
+                <br>
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#imageModal" style="cursor:pointer;">크게 보기</button>
         </div>
         {% if userId == None or userId == '' %}
         <div class="widget d-flex flex-column gap-2">
@@ -163,7 +165,6 @@
           </p>
         </div>
       </div>
-
     </div>
   </div>
 
@@ -260,6 +261,19 @@
             <input type="text" class="form-control" id="editText" name="editContent" placeholder="일정 내용" required>
             <button type="submit" class="btn btn-primary">저장</button>
           </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 모달 -->
+  <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content bg-transparent border-0">
+        <div class="modal-body text-center">
+          <!-- 큰 이미지 -->
+          <img src="/static/curriculum.png"
+              class="img-fluid rounded"
+              alt="큰 이미지">
         </div>
       </div>
     </div>
