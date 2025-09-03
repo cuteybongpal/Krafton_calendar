@@ -30,10 +30,14 @@ def hello_world():
     userId = session.get('userId')
     memos = None
     if userId == "admin@admin":
-        memos = memoRepo.getMemos({"$or": [{"user" : userId}, {"user": "admin@admin"}]})
+        memos = memoRepo.getMemos({"$or": [
+                {"user" : userId},
+                {"user": "admin@admin"}
+            ]
+        })
     else:
         memos = memoRepo.getMemos({"user" : userId})
-    
+    print(memos);
     meal = mealRepo.getMeal(date.today().isoformat())  
     
     datadict =  {
