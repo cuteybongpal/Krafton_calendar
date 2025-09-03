@@ -66,7 +66,7 @@ def llllll():
     sessionId = secrets.token_urlsafe(32)
     session['sessionId'] = sessionId
     session['userId'] = id
-    print(id)
+    print(session['userId'])
     return redirect('/')
 
 @app.route('/logout', methods=['GET'])
