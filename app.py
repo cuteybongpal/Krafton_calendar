@@ -27,9 +27,8 @@ app.config.update(
 
 @app.route('/')
 def hello_world():
-    print(session.get('userId'))
     userId = session.get('userId')
-    memos = memoRepo.getMemos({"user" : userId})
+    memos = memoRepo.getMemos({"@or": [{"user" : userId}, {"user": "admin@admin"}]})
     
     meal = mealRepo.getMeal(date.today().isoformat())  
     
@@ -37,7 +36,6 @@ def hello_world():
         "userId" : userId,
         "memos" : memos,
     }
-    
     if (meal == None):
         datadict['meal'] = None
     else:
@@ -67,7 +65,7 @@ def llllll():
     sessionId = secrets.token_urlsafe(32)
     session['sessionId'] = sessionId
     session['userId'] = id
-    print(session.get('userId'))
+    print(id)
     return redirect('/')
 
 @app.route('/logout', methods=['GET'])
@@ -144,4 +142,4 @@ if __name__ == '__main__':
     userRepo = UserRepository(dbconnector)
     memoRepo = memoRepository(dbconnector)
     mealRepo = mealRepository(dbconnector)
-    app.run(host="0.0.0.0", port=5000)
+    app.run('')
