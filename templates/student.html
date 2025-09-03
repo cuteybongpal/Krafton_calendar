@@ -154,9 +154,12 @@
         </div>
           <div class="widget">
           <h5>오늘 급식</h5>
-          <p>
-            A : 된장찌개, 야채볶음밥<br>
-            B : 김치찌개, 비빔밥
+          <p id="mealMenu">
+            {% if meal == None %}
+            A : 등록되지 않았습니다.
+            {% else %}
+            A : {{meal["menu"]}}
+            {% endif %}
           </p>
         </div>
       </div>
@@ -393,9 +396,7 @@
         
         let data = [];
         let names = []
-        console.log(todayEvents)
         for (let i = 0; i < todayEvents.length; i++){
-          console.log(todayEvents[i])
           const start = todayEvents[i]['startTime'].split(':').map(Number);
           const end = todayEvents[i]['endTime'].split(':').map(Number);
           const startMinutes = start[0]*60 + start[1];
@@ -403,8 +404,6 @@
           data.push(Math.max(0, endMinutes - startMinutes));
           names.push(todayEvents[i]['content'])
         }
-        console.log(data)
-        console.log(names)
         if (data.length === 0) {
           data = [1];
           todayEvents.push('오늘 일정을 넣어주세요')
@@ -443,10 +442,11 @@
     }
 
     function renderCurriculum(items) {
+        console.log("상ㅇㅇㅇㅇ")
         const list = document.getElementById("dbDataList");
         const moreBtn = document.getElementById("moreCurriculumBtn");
         if (!list) return;
-
+        console.log(items)
         list.innerHTML = "";
         const top = items.slice(0, 5);
         top.forEach(it => {
@@ -472,7 +472,14 @@
             };
         }
     }
-    
+
+    const meal = {{meal|tojson}}
+    console.log(meal)
+    if (meal == null)
+      $('#mealMenu').context = "A : 등록되지 않았습니다."
+    else
+      $('#mealMenu').context = `A : ${meal['menu']}`
+
     renderCalendar();
     function updateCharts() { renderTodayChart(); }
     setTimeout(() => { renderTodayChart(); }, 0);

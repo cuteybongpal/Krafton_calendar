@@ -30,18 +30,16 @@ def hello_world():
     userId = session.get('userId')
     memos = memoRepo.getMemos({"user" : userId})
     
-    meal = mealRepo.getMeal(date.today().isoformat())
-    print(date.today().isoformat())
-    
+    meal = mealRepo.getMeal(date.today().isoformat())  
     
     datadict =  {
         "userId" : userId,
         "memos" : memos,
     }
     if (meal == None):
-        datadict['meal'] = {}
+        datadict['meal'] = None
     else:
-        datadict['meal'] = meal.to_dict()
+        datadict['meal'] = {"menu" : meal['menu']}
     
     if (session.get('userId') == 'admin@admin'):
         return jinjaUtil.render("admin", datadict)
@@ -110,7 +108,7 @@ def modMemo():
 
 @app.route('/meal/add', methods=['POST'])
 def addMeal():
-    date = request.form.get('mealDate')
+    date = request.form.get('date')
     menu = request.form.get('meal')
 
     m = meal(date, menu)
@@ -129,14 +127,15 @@ def weeks_sort_key(w: str) -> int:
 
 @app.get("/api/curriculum")
 def api_curriculum():
-    try:
-        docs = list(mongo_db[COLL_NAME].find(
-            {}, {"_id": 0, "weeks": 1, "description": 1}
-        ))
-        docs.sort(key=lambda d: weeks_sort_key(d.get("weeks", "")))
-        return jsonify(docs), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    
+    docs = list(mongo_db[COLL_NAME].find(
+        {}, {"_id": 0, "weeks": 1, "description": 1}
+    ))
+    docs.sort(key=lambda d: weeks_sort_key(d.get("weeks", "")))
+    if len(docs) == 0:
+        return RuntimeError("intentional 500")
+    return jsonify(docs), 200
+        
     
 if __name__ == '__main__':
     dbconnector = dbConnector()

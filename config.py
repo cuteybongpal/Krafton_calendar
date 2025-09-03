@@ -14,7 +14,7 @@ HEADERS = {
 
 # 환경변수로 설정 가능
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
-DB_NAME   = os.getenv("DB_NAME", "krafton")
+DB_NAME   = os.getenv("DB_NAME", "MyDb")
 COLL_NAME = os.getenv("COLL_NAME", "curriculum_min")  # 최소 필드 전용 컬렉션명 예시
 
 
