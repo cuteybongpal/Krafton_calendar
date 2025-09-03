@@ -203,9 +203,57 @@
       </div>
     </div>
   </div>
+  <!-- 일정 관리 모달 -->
+  <div class="modal fade" id="eventModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">일정 관리</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <h6 id="eventDateLabel"></h6>
+          <ul id="eventList" class="list-group mb-3"></ul>
 
+          <form id="eventForm" class="d-flex flex-column gap-2" action="/memo/create" method="post">
+            <input type="hidden" name="date" id="eventFormDate">
+            <div class="d-flex gap-2">
+              <input type="time" class="form-control" id="startTime" name="startTime" required>
+              <input type="time" class="form-control" id="endTime" name="endTime" required>
+            </div>
+            <input type="text" class="form-control" id="eventText" placeholder="일정 내용" name="content" required>
+            <button type="submit" class="btn btn-primary">추가</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 일정 수정 모달 -->
+  <div class="modal fade" id="editEventModal" tabindex="1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">일정 수정</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="editEventForm" class="d-flex flex-column gap-2" action="/memo/modify" method="post">
+            <input type="hidden" id="memoId" name="id">
+            <div class="d-flex gap-2">
+              <input type="time" class="form-control" id="editStartTime" name="editStartTime" required>
+              <input type="time" class="form-control" id="editEndTime" name="editEndTime" required>
+            </div>
+            <input type="text" class="form-control" id="editText" name="editContent" placeholder="일정 내용" required>
+            <button type="submit" class="btn btn-primary">저장</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://code.jquery.com/jquery-latest.min.js"></script>
   <script>
 
     document.getElementById("today-date").innerText = new Date().toISOString().split('T')[0];
@@ -242,7 +290,6 @@
         if (date) {
           date.setHours(19)
           const key = formatDateKey(date);
-          console.log(key)
           const dateDiv = document.createElement("div");
           dateDiv.textContent = date.getDate();
           cell.appendChild(dateDiv);
@@ -256,7 +303,6 @@
             cell.addEventListener("click", () => {
               selected = date;
               selectedDateKey = key;
-              console.log(key)
               renderEventModal(selectedDateKey);
               new bootstrap.Modal(document.getElementById("eventModal")).show();
               renderCalendar();
@@ -289,24 +335,22 @@
       const list = document.getElementById("eventList");
       list.innerHTML = "";
 
-      let memo = {{ memos| tojson
-    }}
-    for (let i = 0; i < memo.length; i++) {
-      if (memo[i]['date'] != dateKey)
-        continue
-      console.log(memo[i]["content"])
-      const li = document.createElement("li");
-      li.id = `${memo[i]['id']}`
-      li.className = "list-group-item d-flex justify-content-between align-items-center";
-      li.innerHTML = `
-      <span>${memo[i]['startTime']}~${memo[i]['endTime']} - ${memo[i]['content']}</span>
-      <div class="d-flex gap-2">
-        <button class="btn btn-sm btn-warning" onclick="showMemoMod('${memo[i]['id']}')">수정</button>
-        <a href="/memo/delete?id=${memo[i]['id']}" class="btn btn-sm btn-danger">삭제</a>
-      </div>`;
-      list.appendChild(li);
-    }
-  }
+      let memo = {{ memos| tojson }}
+      for (let i = 0; i < memo.length; i++) {
+        if (memo[i]['date'] != dateKey)
+          continue
+        const li = document.createElement("li");
+        li.id = `${memo[i]['id']}`
+        li.className = "list-group-item d-flex justify-content-between align-items-center";
+        li.innerHTML = `
+        <span>${memo[i]['startTime']}~${memo[i]['endTime']} - ${memo[i]['content']}</span>
+        <div class="d-flex gap-2">
+          <button class="btn btn-sm btn-warning" onclick="showMemoMod('${memo[i]['id']}')">수정</button>
+          <a href="/memo/delete?id=${memo[i]['id']}" class="btn btn-sm btn-danger">삭제</a>
+        </div>`;
+        list.appendChild(li);
+      }
+    } 
     function showMemoMod(id) {
       $('.modal-backdrop').hide()
       $('#eventModal').hide()
@@ -329,33 +373,39 @@
     function renderTodayChart() {
         if (!Chart) return;
         const todayKey = formatDateKey(new Date());
-        console.log(todayKey)
         let memo = {{memos|tojson}}
         const todayEvents = [];
+        
         for (let i = 0; i < memo.length; i++){
           if (memo[i]['date'] == todayKey)
-            todayEvents.add(`${memo[i]['startTime']},${memo[i]['endTime']},${memo[i]['endTime']}`)
+            todayEvents.push({"startTime":memo[i]['startTime'],"endTime": memo[i]['endTime'],"content":memo[i]['content']})
         }
         
         let data = [];
-        for (let i = 0; i < todayEvents.lengh; i++){
-          let splitedString = todayEvents[i].split(',')
-          const start = splitedString[0].split(':').map(Number);
-          const end = splitedString[1].split(':').map(Number);
+        let names = []
+        console.log(todayEvents)
+        for (let i = 0; i < todayEvents.length; i++){
+          console.log(todayEvents[i])
+          const start = todayEvents[i]['startTime'].split(':').map(Number);
+          const end = todayEvents[i]['endTime'].split(':').map(Number);
           const startMinutes = start[0]*60 + start[1];
           const endMinutes = end[0]*60 + end[1];
           data.push(Math.max(0, endMinutes - startMinutes));
+          names.push(todayEvents[i]['content'])
         }
-        
-
-        if (data.length === 0) data = [1];
+        console.log(data)
+        console.log(names)
+        if (data.length === 0) {
+          data = [1];
+          todayEvents.push('오늘 일정을 넣어주세요')
+        }
 
         if (todayChart) todayChart.destroy();
 
         todayChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: todayEvents.map(ev => ev.text),
+                labels: names,
                 datasets: [{
                     data: data,
                     backgroundColor: todayEvents.map((_, i) => `hsl(${i*60}, 70%, 60%)`),
@@ -364,7 +414,7 @@
             options: {
                 plugins: {
                     legend: { position: 'bottom', labels: { font: { size: 12 } } },
-                    tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.raw}분` } }
+                    tooltip: { callbacks: { label: (ctx) => data[ctx.dataIndex] + "분" } }
                 }
             }
         });
