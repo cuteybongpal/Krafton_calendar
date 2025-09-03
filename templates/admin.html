@@ -12,8 +12,8 @@
 
         .sidebar {
             background-color: #fff;
-            min-height: 100vh;
-            padding: 20px;
+            min-height: 98vh;
+            padding: 20 px;
             box-shadow: 2px 0 6px rgba(0, 0, 0, 0.1);
         }
 
@@ -32,18 +32,18 @@
             gap: .2rem;
         }
 
-        .calendar-cell {
-            height: 120px;
+         .calendar-cell {
+            height: 140px;
             display: flex;
             flex-direction: column;
-            align-items: flex-start;
+            align-items: center;
             justify-content: flex-start;
             border-radius: .5rem;
             font-size: .75rem;
             cursor: pointer;
-            padding: 4px;
+            padding: 2px;
             position: relative;
-        }
+            }
 
         .calendar-cell.disabled {
             color: #bbb;
@@ -107,11 +107,6 @@
                     <ul id="dbDataList" class="list-unstyled mb-0 small"></ul>
                     <button class="btn btn-link btn-sm mt-2" id="moreCurriculumBtn">더 보기</button>
                 </div>
-                <div class="widget">
-                    <h5>오늘 급식</h5>
-                    <p id="mealMenu">A : 된장찌개, 야채볶음밥</p>
-                    <button class="btn btn-sm btn-secondary" id="editMealBtn">편집</button>
-                </div>
                 <div class="widget d-flex flex-column gap-2">
                     <a href="/logout" class="btn btn-danger w-100">로그아웃</a>
                 </div>
@@ -139,6 +134,11 @@
 
                         <div id="calendarGrid" class="calendar-grid"></div>
                     </div>
+                </div>
+                  <div class="widget">
+                    <h5>오늘 급식</h5>
+                    <p id="mealMenu">A : 된장찌개, 야채볶음밥</p>
+                    <button class="btn btn-sm btn-secondary" id="editMealBtn">편집</button>
                 </div>
             </div>
 
