@@ -36,6 +36,7 @@ def hello_world():
         "userId" : userId,
         "memos" : memos,
     }
+    print(userId)
     if (meal == None):
         datadict['meal'] = None
     else:
