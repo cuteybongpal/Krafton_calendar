@@ -12,8 +12,8 @@
 
     .sidebar {
       background-color: #fff;
-      min-height: 100vh;
-      padding: 20px;
+      min-height: 98vh;
+      padding: 20 px;
       box-shadow: 2px 0 6px rgba(0, 0, 0, 0.1);
     }
 
@@ -33,7 +33,7 @@
     }
 
     .calendar-cell {
-      height: 120px;
+      height: 140px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -67,7 +67,6 @@
       white-space: nowrap;
       width: 100%;
     }
-
     .weekday {
       font-weight: 600;
       text-align: center;
@@ -114,13 +113,6 @@
             <ul id="dbDataList" class="list-unstyled mb-0 small"></ul>
                 <button class="btn btn-link btn-sm mt-2" id="moreCurriculumBtn">더 보기</button>
         </div>
-        <div class="widget">
-          <h5>오늘 급식</h5>
-          <p>
-            A : 된장찌개, 야채볶음밥<br>
-            B : 김치찌개, 비빔밥
-          </p>
-        </div>
         {% if userId == None or userId == '' %}
         <div class="widget d-flex flex-column gap-2">
           <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#signupModal">회원가입</button>
@@ -159,6 +151,13 @@
             <!-- 날짜 그리드 -->
             <div id="calendarGrid" class="calendar-grid"></div>
           </div>
+        </div>
+          <div class="widget">
+          <h5>오늘 급식</h5>
+          <p>
+            A : 된장찌개, 야채볶음밥<br>
+            B : 김치찌개, 비빔밥
+          </p>
         </div>
       </div>
 
