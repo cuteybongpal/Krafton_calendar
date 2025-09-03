@@ -248,10 +248,11 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="mealForm">
+                    <form id="mealForm" action="/meal/add" method="post">
                         <div class="mb-3">
+                            <input type="hidden" id="mealDate" name="date">
                             <label class="form-label">A 메뉴</label>
-                            <input type="text" class="form-control" id="mealA">
+                            <input type="text" class="form-control" id="mealA" name="meal">
                         </div>
                         <button type="submit" class="btn btn-primary w-100">저장</button>
                     </form>
@@ -391,6 +392,9 @@
             const line = mealMenu.innerHTML.replace("A : ", "");
             document.getElementById("mealA").value = line;
             new bootstrap.Modal(document.getElementById("editMealModal")).show();
+            _today = new Date()
+            _today.setHours(19)
+            $('#mealDate').val(formatDateKey(_today))
         });
         document.getElementById("mealForm").addEventListener("submit", e => {
             const a = document.getElementById("mealA").value;
@@ -402,11 +406,10 @@
         const ctx = document.getElementById('todayChart').getContext('2d');
         let todayChart = null;
 
-        function renderTodayChart() {
+    function renderTodayChart() {
             if (!Chart) return;
             const todayKey = formatDateKey(new Date());
-            let memo = {{ memos| tojson
-        }}
+            let memo = {{ memos| tojson }}
         const todayEvents = [];
 
         for (let i = 0; i < memo.length; i++) {
@@ -452,8 +455,7 @@
                     legend: { position: 'bottom', labels: { font: { size: 12 } } },
                     tooltip: { callbacks: { label: (ctx) => data[ctx.dataIndex] + "분" } }
                 }
-            }
-        });
+            }});
         }
             async function fetchCurriculum() {
         const list = document.getElementById("dbDataList");

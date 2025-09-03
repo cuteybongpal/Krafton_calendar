@@ -1,9 +1,12 @@
-from flask import Flask, redirect, request, session, make_response, jsonify
+from flask import Flask, redirect, request, session, jsonify
 from db import dbConnector
 from user import UserRepository
 from memos import memoRepository, memo
+from meal import meal, mealRepository
+from datetime import date
 import jinjaUtil
 import secrets
+
 # 커리큘럼 API용 MongoDB 연결(분리 구성)
 from pymongo import MongoClient
 from config import MONGO_URI, DB_NAME, COLL_NAME  # 별도 config.py에 정의해 두세요.
@@ -11,6 +14,7 @@ from config import MONGO_URI, DB_NAME, COLL_NAME  # 별도 config.py에 정의�
 dbconnector = None
 userRepo = None
 memoRepo = None
+mealRepo = None
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'withoutme'
@@ -25,11 +29,20 @@ app.config.update(
 def hello_world():
     userId = session.get('userId')
     memos = memoRepo.getMemos({"user" : userId})
-
+    
+    meal = mealRepo.getMeal(date.today().isoformat())
+    print(date.today().isoformat())
+    
+    
     datadict =  {
         "userId" : userId,
-        "memos" : memos
+        "memos" : memos,
     }
+    if (meal == None):
+        datadict['meal'] = {}
+    else:
+        datadict['meal'] = meal.to_dict()
+    
     if (session.get('userId') == 'admin@admin'):
         return jinjaUtil.render("admin", datadict)
     else:
@@ -95,6 +108,15 @@ def modMemo():
     memoRepo.modifyMemo(id, {"endTime" : endTime, "startTime" : startTime, "content" : content})
     return redirect('/')
 
+@app.route('/meal/add', methods=['POST'])
+def addMeal():
+    date = request.form.get('mealDate')
+    menu = request.form.get('meal')
+
+    m = meal(date, menu)
+    isSuccess = mealRepo.addMemo(m)
+    return jinjaUtil.render('error' , {"errorCode" : isSuccess['errorCode']})
+
 # MongoDB(커리큘럼) 연결
 mongo_client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
 mongo_db = mongo_client[DB_NAME]
@@ -120,4 +142,5 @@ if __name__ == '__main__':
     dbconnector = dbConnector()
     userRepo = UserRepository(dbconnector)
     memoRepo = memoRepository(dbconnector)
+    mealRepo = mealRepository(dbconnector)
     app.run()
