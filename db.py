@@ -2,8 +2,8 @@ from pymongo import MongoClient
 
 class dbConnector:
     def __init__(self):
-        self.client = MongoClient("mongodb://rootadmin:관리자강비@127.0.0.1:27017/admin?authSource=admin")
-        self.database = self.client["MyDb"]
+        self.client = MongoClient(os.environ.get("MONGODB_URI"))
+        self.database = self.client.get_database()
 
 class dbTable:
     def __init__(self, db, tableName):
