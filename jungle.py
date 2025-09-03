@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from pymongo import MongoClient, ASCENDING
 
 # 환경변수(없으면 기본값 사용)
-MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://appuser:App1234@127.0.0.1:27017/MyDb?authSource=MyDb")
 DB_NAME   = os.getenv("DB_NAME", "krafton")
 COLL_NAME = os.getenv("COLL_NAME", "curriculum_min")
 
