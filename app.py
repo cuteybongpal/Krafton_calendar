@@ -21,7 +21,7 @@ app.config['SECRET_KEY'] = 'withoutme'
 
 app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
-    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_SECURE=False,
     SESSION_COOKIE_SAMESITE="Lax"
 )
 
