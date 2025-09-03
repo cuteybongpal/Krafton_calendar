@@ -96,13 +96,6 @@
           <h4 id="today-date"></h4>
         </div>
         <div class="widget">
-          <h5>오늘 급식</h5>
-          <p>
-            A : 된장찌개, 야채볶음밥<br>
-            B : 김치찌개, 비빔밥
-          </p>
-        </div>
-        <div class="widget">
           <h5>오늘 일정 분량</h5>
           <canvas id="todayChart" width="150" height="150"></canvas>
         </div>
@@ -116,6 +109,18 @@
             님 환영합니다!
           </h5>
         </div>
+         <div class="widget" id="curriculumWidget">
+          <h5>정글 커리큘럼</h5>
+            <ul id="dbDataList" class="list-unstyled mb-0 small"></ul>
+                <button class="btn btn-link btn-sm mt-2" id="moreCurriculumBtn">더 보기</button>
+        </div>
+        <div class="widget">
+          <h5>오늘 급식</h5>
+          <p>
+            A : 된장찌개, 야채볶음밥<br>
+            B : 김치찌개, 비빔밥
+          </p>
+        </div>
         {% if userId == None or userId == '' %}
         <div class="widget d-flex flex-column gap-2">
           <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#signupModal">회원가입</button>
@@ -126,11 +131,6 @@
           <a href="/logout" class="btn btn-danger w-100">로그아웃</a>
         </div>
         {% endif %}
-        <div class="widget" id="curriculumWidget">
-          <h5>정글 커리큘럼</h5>
-            <ul id="dbDataList" class="list-unstyled mb-0 small"></ul>
-                <button class="btn btn-link btn-sm mt-2" id="moreCurriculumBtn">더 보기</button>
-        </div>
       </div>
 
       <!-- 오른쪽 달력 -->
