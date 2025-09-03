@@ -127,14 +127,14 @@ def weeks_sort_key(w: str) -> int:
 
 @app.get("/api/curriculum")
 def api_curriculum():
-    
-    docs = list(mongo_db[COLL_NAME].find(
-        {}, {"_id": 0, "weeks": 1, "description": 1}
-    ))
-    docs.sort(key=lambda d: weeks_sort_key(d.get("weeks", "")))
-    if len(docs) == 0:
-        return RuntimeError("intentional 500")
-    return jsonify(docs), 200
+    try:
+        docs = list(mongo_db[COLL_NAME].find(
+            {}, {"_id": 0, "weeks": 1, "description": 1}
+        ))
+        docs.sort(key=lambda d: weeks_sort_key(d.get("weeks", "")))
+        return jsonify(docs), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
         
     
 if __name__ == '__main__':
