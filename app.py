@@ -27,7 +27,7 @@ app.config.update(
 
 @app.route('/')
 def hello_world():
-    print(session.get('userId')
+    print(session.get('userId'))
     userId = session.get('userId')
     memos = memoRepo.getMemos({"user" : userId})
     
