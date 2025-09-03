@@ -3,8 +3,8 @@ import os
 
 class dbConnector:
     def __init__(self):
-        self.client = MongoClient(os.environ.get("MONGODB_URI"))
-        self.database = self.client.get_database("MyDb")
+        self.client = MongoClient("mongodb://appuser:App1234@127.0.0.1:27017/MyDb?authSource=MyDb")
+        self.database = self.client["MyDb"]
 
 class dbTable:
     def __init__(self, db, tableName):
