@@ -74,6 +74,12 @@
             font-size: .75rem;
             padding: .1rem 0;
         }
+          #dbDataList li {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: left;
+        }
     </style>
 </head>
 
@@ -104,6 +110,11 @@
                 <div class="widget d-flex flex-column gap-2">
                     <a href="/logout" class="btn btn-danger w-100">로그아웃</a>
                 </div>
+                 <div class="widget" id="curriculumWidget">
+                <h5>정글 커리큘럼</h5>
+                <ul id="dbDataList" class="list-unstyled mb-0 small"></ul>
+                <button class="btn btn-link btn-sm mt-2" id="moreCurriculumBtn">더 보기</button>
+            </div>
             </div>
 
             <div class="col-9 p-4">
@@ -444,11 +455,56 @@
             }
         });
         }
+            async function fetchCurriculum() {
+        const list = document.getElementById("dbDataList");
+        try {
+            const res = await fetch("/api/curriculum");
+            if (!res.ok) throw new Error("API 응답 오류");
+            const items = await res.json();
+            renderCurriculum(items);
+        } catch (e) {
+            if (list) list.innerHTML = `<li class="text-danger">데이터를 불러오지 못했습니다.</li>`;
+            console.error(e);
+        }
+    }
 
+    function renderCurriculum(items) {
+        const list = document.getElementById("dbDataList");
+        const moreBtn = document.getElementById("moreCurriculumBtn");
+        if (!list) return;
+
+        list.innerHTML = "";
+        const top = items.slice(0, 5);
+        top.forEach(it => {
+            const li = document.createElement("li");
+            li.textContent = `${it.weeks} · ${it.description}`;
+            list.appendChild(li);
+        });
+
+        if (!moreBtn) return;
+
+        if (items.length <= 5) {
+            moreBtn.style.display = "none";
+        } else {
+            moreBtn.style.display = "";
+            moreBtn.onclick = () => {
+                list.innerHTML = "";
+                items.forEach(it => {
+                    const li = document.createElement("li");
+                    li.textContent = `${it.weeks} · ${it.description}`;
+                    list.appendChild(li);
+                });
+                moreBtn.style.display = "none";
+            };
+        }
+    }
         function updateCharts() { renderTodayChart(); }
         setTimeout(() => {
             renderTodayChart();
         }, 0);
+        renderCalendar();
+            setTimeout(() => { renderTodayChart(); }, 0);
+            fetchCurriculum();
     </script>
 
 </body>

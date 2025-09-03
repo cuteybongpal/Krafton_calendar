@@ -95,13 +95,6 @@ def modMemo():
     memoRepo.modifyMemo(id, {"endTime" : endTime, "startTime" : startTime, "content" : content})
     return redirect('/')
 
-
-if __name__ == '__main__':
-    dbconnector = dbConnector()
-    userRepo = UserRepository(dbconnector)
-    memoRepo = memoRepository(dbconnector)
-    app.run()
-
 # MongoDB(커리큘럼) 연결
 mongo_client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
 mongo_db = mongo_client[DB_NAME]
@@ -122,3 +115,9 @@ def api_curriculum():
         return jsonify(docs), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+if __name__ == '__main__':
+    dbconnector = dbConnector()
+    userRepo = UserRepository(dbconnector)
+    memoRepo = memoRepository(dbconnector)
+    app.run()
