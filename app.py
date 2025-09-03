@@ -27,6 +27,7 @@ app.config.update(
 
 @app.route('/')
 def hello_world():
+    print(session.get('userId')
     userId = session.get('userId')
     memos = memoRepo.getMemos({"user" : userId})
     
@@ -36,7 +37,7 @@ def hello_world():
         "userId" : userId,
         "memos" : memos,
     }
-    print(userId)
+    
     if (meal == None):
         datadict['meal'] = None
     else:
