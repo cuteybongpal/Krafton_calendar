@@ -29,14 +29,9 @@ app.config.update(
 def hello_world():
     userId = session.get('userId')
     memos = None
-    if userId == "admin@admin":
-        memos = memoRepo.getMemos({"$or": [
-                {"user" : userId},
-                {"user": "admin@admin"}
-            ]
-        })
-    else:
-        memos = memoRepo.getMemos({"user" : userId})
+    memos = memoRepo.getMemos({"user" : userId})
+    if userId != "admin@admin":
+        memos.extend(memoRepo.getMemos({"user": "admin@admin"}))
     print(memos);
     meal = mealRepo.getMeal(date.today().isoformat())  
     
