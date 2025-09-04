@@ -32,7 +32,7 @@
             gap: .2rem;
         }
 
-         .calendar-cell {
+        .calendar-cell {
             height: 140px;
             display: flex;
             flex-direction: column;
@@ -43,7 +43,7 @@
             cursor: pointer;
             padding: 2px;
             position: relative;
-            }
+        }
 
         .calendar-cell.disabled {
             color: #bbb;
@@ -74,7 +74,8 @@
             font-size: .75rem;
             padding: .1rem 0;
         }
-          #dbDataList li {
+
+        #dbDataList li {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -106,6 +107,8 @@
                     <h5>정글 커리큘럼</h5>
                     <ul id="dbDataList" class="list-unstyled mb-0 small"></ul>
                     <button class="btn btn-link btn-sm mt-2" id="moreCurriculumBtn">더 보기</button>
+                    <br>
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#imageModal" style="cursor:pointer;">크게 보기</button>
                 </div>
                 <div class="widget d-flex flex-column gap-2">
                     <a href="/logout" class="btn btn-danger w-100">로그아웃</a>
@@ -135,9 +138,15 @@
                         <div id="calendarGrid" class="calendar-grid"></div>
                     </div>
                 </div>
-                  <div class="widget">
+                <div class="widget">
                     <h5>오늘 급식</h5>
-                    <p id="mealMenu">A : 된장찌개, 야채볶음밥</p>
+                    <p id="mealMenu">
+                        {% if meal == None %}
+                        A : 등록되지 않았습니다.
+                        {% else %}
+                        A : {{meal["menu"]}}
+                        {% endif %}
+                    </p>
                     <button class="btn btn-sm btn-secondary" id="editMealBtn">편집</button>
                 </div>
             </div>
@@ -260,7 +269,18 @@
             </div>
         </div>
     </div>
-
+    <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content bg-transparent border-0">
+        <div class="modal-body text-center">
+          <!-- 큰 이미지 -->
+          <img src="/static/curriculum.png"
+              class="img-fluid rounded"
+              alt="큰 이미지">
+        </div>
+      </div>
+    </div>
+  </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://code.jquery.com/jquery-latest.min.js"></script>
@@ -313,20 +333,20 @@
 
                     const today = new Date();
                     if (date.toDateString() === today.toDateString()) cell.classList.add("today");
-                    if (selected && date.toDateString() === selected.toDateString()) cell.classList.add("selected");
-                    if (date < MIN_DATE || date > MAX_DATE) {
-                        cell.classList.add("disabled");
-                    } else {
-                        cell.addEventListener("click", () => {
-                            selected = date;
-                            selectedDateKey = key;
-                            renderEventModal(selectedDateKey);
-                            new bootstrap.Modal(document.getElementById("eventModal")).show();
-                            renderCalendar();
-                        });
-                    }
-                    let memo = {{ memos | tojson }}
-                    for (let j = 0; j < memo.length; j++) {
+                if (selected && date.toDateString() === selected.toDateString()) cell.classList.add("selected");
+                if (date < MIN_DATE || date > MAX_DATE) {
+                    cell.classList.add("disabled");
+                } else {
+                    cell.addEventListener("click", () => {
+                        selected = date;
+                        selectedDateKey = key;
+                        renderEventModal(selectedDateKey);
+                        new bootstrap.Modal(document.getElementById("eventModal")).show();
+                        renderCalendar();
+                    });
+                }
+                let memo = {{ memos | tojson }}
+                for (let j = 0; j < memo.length; j++) {
                     if (key == memo[j]["date"]) {
                         const eventDiv = document.createElement("div");
                         eventDiv.className = "calendar-event";
@@ -346,33 +366,34 @@
         }
 
         function renderEventModal(dateKey) {
-      
+
             document.getElementById("eventDateLabel").textContent = dateKey;
             document.getElementById("eventFormDate").value = dateKey
             const list = document.getElementById("eventList");
             list.innerHTML = "";
 
-            let memo = {{ memos| tojson }}
-            for (let i = 0; i < memo.length; i++) {
-                if (memo[i]['date'] != dateKey)
+            let memo = {{ memos| tojson
+        }}
+        for (let i = 0; i < memo.length; i++) {
+            if (memo[i]['date'] != dateKey)
                 continue
-                const li = document.createElement("li");
-                li.id = `${memo[i]['id']}`
-                li.className = "list-group-item d-flex justify-content-between align-items-center";
-                li.innerHTML = `
+            const li = document.createElement("li");
+            li.id = `${memo[i]['id']}`
+            li.className = "list-group-item d-flex justify-content-between align-items-center";
+            li.innerHTML = `
                 <span>${memo[i]['startTime']}~${memo[i]['endTime']} - ${memo[i]['content']}</span>
                 <div class="d-flex gap-2">
                 <button class="btn btn-sm btn-warning" onclick="showMemoMod('${memo[i]['id']}')">수정</button>
                 <a href="/memo/delete?id=${memo[i]['id']}" class="btn btn-sm btn-danger">삭제</a>
                 </div>`;
-                list.appendChild(li);
-            }
-        } 
-    function showMemoMod(id) {
-      bootstrap.Modal.getInstance(document.getElementById("eventModal")).hide();
-      new bootstrap.Modal(document.getElementById("editEventModal")).show();
-      $('#memoId').val(id)
-    }
+            list.appendChild(li);
+        }
+        }
+        function showMemoMod(id) {
+            bootstrap.Modal.getInstance(document.getElementById("eventModal")).hide();
+            new bootstrap.Modal(document.getElementById("editEventModal")).show();
+            $('#memoId').val(id)
+        }
 
         prevBtn.addEventListener("click", () => { current.setMonth(current.getMonth() - 1); renderCalendar(); });
         nextBtn.addEventListener("click", () => { current.setMonth(current.getMonth() + 1); renderCalendar(); });
@@ -406,26 +427,22 @@
         const ctx = document.getElementById('todayChart').getContext('2d');
         let todayChart = null;
 
-    function renderTodayChart() {
+        function renderTodayChart() {
             if (!Chart) return;
             const todayKey = formatDateKey(new Date());
-            let memo = {{ memos| tojson }}
+            let memo = {{ memos| tojson
+        }}
         const todayEvents = [];
 
         for (let i = 0; i < memo.length; i++) {
-            console.log(memo[i]['date'])
-            console.log(todayKey)
-            console.log(memo[i]['date'] == todayKey)
             if (memo[i]['date'] == todayKey) {
                 todayEvents.push({ "startTime": memo[i]['startTime'], "endTime": memo[i]['endTime'], "content": memo[i]['content'] })
-                console.log(todayEvents)
             }
         }
 
         let data = [];
         let names = []
         for (let i = 0; i < todayEvents.length; i++) {
-            console.log(todayEvents[i])
             const start = todayEvents[i]['startTime'].split(':').map(Number);
             const end = todayEvents[i]['endTime'].split(':').map(Number);
             const startMinutes = start[0] * 60 + start[1];
@@ -455,58 +472,65 @@
                     legend: { position: 'bottom', labels: { font: { size: 12 } } },
                     tooltip: { callbacks: { label: (ctx) => data[ctx.dataIndex] + "분" } }
                 }
-            }});
-        }
-            async function fetchCurriculum() {
-        const list = document.getElementById("dbDataList");
-        try {
-            const res = await fetch("/api/curriculum");
-            if (!res.ok) throw new Error("API 응답 오류");
-            const items = await res.json();
-            renderCurriculum(items);
-        } catch (e) {
-            if (list) list.innerHTML = `<li class="text-danger">데이터를 불러오지 못했습니다.</li>`;
-            console.error(e);
-        }
-    }
-
-    function renderCurriculum(items) {
-        const list = document.getElementById("dbDataList");
-        const moreBtn = document.getElementById("moreCurriculumBtn");
-        if (!list) return;
-
-        list.innerHTML = "";
-        const top = items.slice(0, 5);
-        top.forEach(it => {
-            const li = document.createElement("li");
-            li.textContent = `${it.weeks} · ${it.description}`;
-            list.appendChild(li);
+            }
         });
-
-        if (!moreBtn) return;
-
-        if (items.length <= 5) {
-            moreBtn.style.display = "none";
-        } else {
-            moreBtn.style.display = "";
-            moreBtn.onclick = () => {
-                list.innerHTML = "";
-                items.forEach(it => {
-                    const li = document.createElement("li");
-                    li.textContent = `${it.weeks} · ${it.description}`;
-                    list.appendChild(li);
-                });
-                moreBtn.style.display = "none";
-            };
         }
-    }
+        async function fetchCurriculum() {
+            const list = document.getElementById("dbDataList");
+            try {
+                const res = await fetch("/api/curriculum");
+                if (!res.ok) throw new Error("API 응답 오류");
+                const items = await res.json();
+                renderCurriculum(items);
+            } catch (e) {
+                if (list) list.innerHTML = `<li class="text-danger">데이터를 불러오지 못했습니다.</li>`;
+                console.error(e);
+            }
+        }
+
+        function renderCurriculum(items) {
+            const list = document.getElementById("dbDataList");
+            const moreBtn = document.getElementById("moreCurriculumBtn");
+            if (!list) return;
+
+            list.innerHTML = "";
+            const top = items.slice(0, 5);
+            top.forEach(it => {
+                const li = document.createElement("li");
+                li.textContent = `${it.weeks} · ${it.description}`;
+                list.appendChild(li);
+            });
+
+            if (!moreBtn) return;
+
+            if (items.length <= 5) {
+                moreBtn.style.display = "none";
+            } else {
+                moreBtn.style.display = "";
+                moreBtn.onclick = () => {
+                    list.innerHTML = "";
+                    items.forEach(it => {
+                        const li = document.createElement("li");
+                        li.textContent = `${it.weeks} · ${it.description}`;
+                        list.appendChild(li);
+                    });
+                    moreBtn.style.display = "none";
+                };
+            }
+        }
         function updateCharts() { renderTodayChart(); }
         setTimeout(() => {
             renderTodayChart();
         }, 0);
         renderCalendar();
-            setTimeout(() => { renderTodayChart(); }, 0);
-            fetchCurriculum();
+        setTimeout(() => { renderTodayChart(); }, 0);
+        fetchCurriculum();
+        const meal = {{meal|tojson}}
+        
+        if (meal == null)
+            $('#mealMenu').context = "A : 등록되지 않았습니다."
+        else
+            $('#mealMenu').context = `A : ${meal['menu']}`
     </script>
 
 </body>

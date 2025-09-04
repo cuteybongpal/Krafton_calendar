@@ -1,4 +1,4 @@
-from flask import Flask, redirect, request, session, jsonify
+from flask import Flask, redirect, request, session, jsonify, url_for
 from db import dbConnector
 from user import UserRepository
 from memos import memoRepository, memo
@@ -21,27 +21,25 @@ app.config['SECRET_KEY'] = 'withoutme'
 
 app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
-    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_SECURE=False,
     SESSION_COOKIE_SAMESITE="Lax"
 )
 
 @app.route('/')
 def hello_world():
     userId = session.get('userId')
-    memos = memoRepo.getMemos({"user" : userId})
+    memos = memoRepo.getMemos({"@or": [{"user" : userId}, {"user": "admin@admin"}]})
     
-    meal = mealRepo.getMeal(date.today().isoformat())
-    print(date.today().isoformat())
-    
+    meal = mealRepo.getMeal(date.today().isoformat())  
     
     datadict =  {
         "userId" : userId,
         "memos" : memos,
     }
     if (meal == None):
-        datadict['meal'] = {}
+        datadict['meal'] = None
     else:
-        datadict['meal'] = meal.to_dict()
+        datadict['meal'] = {"menu" : meal['menu']}
     
     if (session.get('userId') == 'admin@admin'):
         return jinjaUtil.render("admin", datadict)
@@ -110,7 +108,7 @@ def modMemo():
 
 @app.route('/meal/add', methods=['POST'])
 def addMeal():
-    date = request.form.get('mealDate')
+    date = request.form.get('date')
     menu = request.form.get('meal')
 
     m = meal(date, menu)
@@ -137,10 +135,11 @@ def api_curriculum():
         return jsonify(docs), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+        
     
 if __name__ == '__main__':
     dbconnector = dbConnector()
     userRepo = UserRepository(dbconnector)
     memoRepo = memoRepository(dbconnector)
     mealRepo = mealRepository(dbconnector)
-    app.run()
+    app.run('')
