@@ -6,6 +6,7 @@ from meal import meal, mealRepository
 from datetime import date
 import jinjaUtil
 import secrets
+from bson import ObjectId
 
 # 커리큘럼 API용 MongoDB 연결(분리 구성)
 from pymongo import MongoClient
@@ -97,7 +98,7 @@ def addMemo():
 @app.route('/memo/delete', methods=['GET'])
 def delMemo():
     id = request.args.get('id')
-    memos = memoRepo.getMemos({"_id": id})
+    memos = memoRepo.getMemos({"_id": ObjectId(id)})
     if (memos[0]['user'] == "admin@admin"):
         if (session.get('userId') == "admin@admin"):
             memoRepo.removeMemo(id)
