@@ -97,7 +97,12 @@ def addMemo():
 @app.route('/memo/delete', methods=['GET'])
 def delMemo():
     id = request.args.get('id')
-    memoRepo.removeMemo(id)
+    memos = memoRepo.getMemos({"_id": id})
+    if (memos[0]['user'] == "admin@admin"):
+        if (session.get('userId') == "admin@admin"):
+            memoRepo.removeMemo(id)
+    else:
+        memoRepo.removeMemo(id)
     return redirect('/')
 
 @app.route('/memo/modify', methods=['POST'])
