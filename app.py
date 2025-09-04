@@ -37,7 +37,6 @@ app.config.update(
         port=REDIS_PORT,
         password=REDIS_PASSWORD,
         ssl=REDIS_SSL,
-        decode_responses=True,   # 문자열 I/O
     ),
     SESSION_PERMANENT=True,  # 영속 세션 사용
     PERMANENT_SESSION_LIFETIME=timedelta(days=7),  # 절대 만료
