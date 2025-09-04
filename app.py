@@ -1,11 +1,15 @@
+import os
 from flask import Flask, redirect, request, session, jsonify, url_for
 from db import dbConnector
 from user import UserRepository
 from memos import memoRepository, memo
 from meal import meal, mealRepository
-from datetime import date
+from datetime import date, timedelta
 import jinjaUtil
 import secrets
+from bson import ObjectId
+from flask_session import Session
+from redis import Redis
 
 # 커리큘럼 API용 MongoDB 연결(분리 구성)
 from pymongo import MongoClient
@@ -19,17 +23,43 @@ mealRepo = None
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'withoutme'
 
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
+REDIS_PASSWORD = os.getenv("REDIS_PASSWORD") or None
+REDIS_SSL = os.getenv("REDIS_SSL", "false").lower() == "true"
+
+
 app.config.update(
+    # Flask-Session 필수 설정
+    SESSION_TYPE="redis",
+    SESSION_REDIS=Redis(
+        host=REDIS_HOST,
+        port=REDIS_PORT,
+        password=REDIS_PASSWORD,
+        ssl=REDIS_SSL,
+    ),
+    SESSION_PERMANENT=True,  # 영속 세션 사용
+    PERMANENT_SESSION_LIFETIME=timedelta(days=7),  # 절대 만료
+    SESSION_COOKIE_NAME="sid",
+
+    # 쿠키 옵션
     SESSION_COOKIE_HTTPONLY=True,
-    SESSION_COOKIE_SECURE=False,
-    SESSION_COOKIE_SAMESITE="Lax"
+    SESSION_COOKIE_SECURE=False,    # 배포(HTTPS) 환경에선 True 권장
+    SESSION_COOKIE_SAMESITE="Lax",
+
+    # 매 요청마다 쿠키 재발급 여부(선택)
+    SESSION_REFRESH_EACH_REQUEST=False,
 )
 
+Session(app)
 @app.route('/')
 def hello_world():
     userId = session.get('userId')
-    memos = memoRepo.getMemos({"@or": [{"user" : userId}, {"user": "admin@admin"}]})
-    
+    memos = None
+    memos = memoRepo.getMemos({"user" : userId})
+    if userId != "admin@admin":
+        memos.extend(memoRepo.getMemos({"user": "admin@admin"}))
+    print(memos);
     meal = mealRepo.getMeal(date.today().isoformat())  
     
     datadict =  {
@@ -94,7 +124,12 @@ def addMemo():
 @app.route('/memo/delete', methods=['GET'])
 def delMemo():
     id = request.args.get('id')
-    memoRepo.removeMemo(id)
+    memos = memoRepo.getMemos({"_id": ObjectId(id)})
+    if (memos[0]['user'] == "admin@admin"):
+        if (session.get('userId') == "admin@admin"):
+            memoRepo.removeMemo(id)
+    else:
+        memoRepo.removeMemo(id)
     return redirect('/')
 
 @app.route('/memo/modify', methods=['POST'])
@@ -142,4 +177,4 @@ if __name__ == '__main__':
     userRepo = UserRepository(dbconnector)
     memoRepo = memoRepository(dbconnector)
     mealRepo = mealRepository(dbconnector)
-    app.run('')
+    app.run(host="0.0.0.0", port=5000)
